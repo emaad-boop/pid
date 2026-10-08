@@ -1,0 +1,23 @@
+#include<bits/stdc++.c>
+struct PID {
+    float Kp, Ki, Kd;
+    float integral = 0, prevError = 0;
+    float outMin, outMax;
+
+    PID(float p, float i, float d, float minOut, float maxOut)
+        : Kp(p), Ki(i), Kd(d), outMin(minOut), outMax(maxOut) {}
+
+    float compute(float setpoint, float measured, float dt) {
+        float error = setpoint - measured;
+
+        // I term, clamped to limit windup
+        integral += error * dt;
+        integral = std::clamp(integral, -100.0f, 100.0f);
+
+        float derivative = (dt > 0.0f) ? (error - prevError) / dt : 0.0f;
+        prevError = error;
+
+        float output = Kp * error + Ki * integral + Kd * derivative;
+        return std::clamp(output, outMin, outMax);
+    }
+};
